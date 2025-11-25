@@ -6,7 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Response } from 'express';
-import { Role, SigninDto } from 'src/common/dto/signin.dto';
+import {  SigninDto } from 'src/common/dto/signin.dto';
+import { Roles } from 'src/common/enum/roles.enum';
 import { appConfig } from 'src/config';
 import { AdminEntity, TeacherEntity } from 'src/core';
 import { CryptoService } from 'src/infrastructure/crypto/crypto.service';
@@ -28,7 +29,7 @@ export class AuthService {
 
   async signin(dto: SigninDto, res: Response) {
     const { username, password } = dto;
-    if (dto.role == Role.ADMIN) {
+    if (dto.role == 'Admin') {
       const admin = await this.adminRepo.findOne({ where: { username } });
 
       const isMatchPassword = await this.crypto.decrypt(
@@ -53,13 +54,13 @@ export class AuthService {
           id: admin.id,
           username: admin.username,
           fullName: admin.fullName,
-          role: admin.role,
+          role: Roles.ADMIN,
           createdAt: admin.createdAt,
           updatedAt: admin.updatedAt,
         },
       });
     }
-    if (dto.role == Role.TEACHER) {
+    if (dto.role == 'Teacher') {
       const teacher = await this.teacherRepo.findOne({ where: { username } });
 
       const isMatchPassword = await this.crypto.decrypt(
@@ -94,6 +95,8 @@ export class AuthService {
           updatedAt: teacher.updatedAt,
         },
       });
+    } else{
+      throw new HttpException('Role not found', 400);
     }
   }
 

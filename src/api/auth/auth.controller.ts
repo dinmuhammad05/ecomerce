@@ -18,6 +18,8 @@ export class AuthController {
   @ApiOperation({ summary: 'public' })
   @accessRoles('public')
   signIn(@Body() dto: SigninDto, @Res({ passthrough: true }) res: Response) {
+    console.log('dto', dto);
     return this.authService.signin(dto, res);
+
   }
 }

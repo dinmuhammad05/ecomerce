@@ -7,10 +7,7 @@ import {
   Matches,
 } from 'class-validator';
 
-export enum Role {
-  ADMIN = 'ADMIN',
-  TEACHER = 'TEACHER',
-}
+
 
 export class SigninDto {
   @ApiProperty({
@@ -33,8 +30,8 @@ export class SigninDto {
   password: string;
 
   @ApiProperty({
-    enum: Role,
-    example: Role.ADMIN,
+    type: String,
   })
-  role: Role;
+  @IsNotEmpty()
+  role: string;
 }

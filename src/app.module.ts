@@ -11,6 +11,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { VideoModule } from './api/video/video.module';
 import { AuthModule } from './api/auth/auth.module';
+import { StatisticModule } from './api/statistic/statistic.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { AuthModule } from './api/auth/auth.module';
     StudentModule,
     GroupModule,
     AuthModule,
+    StatisticModule,
     // VideoModule,
   ],
   controllers: [],

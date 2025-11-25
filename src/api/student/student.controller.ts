@@ -79,7 +79,9 @@ export class StudentController {
   @ApiOperation({ summary: 'Get student by id for admin and superadmin' })
   @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
   findOneForAdmin(@Param('id', ParseUUIDPipe) id: string) {
-    return this.studentService.findOneById(id);
+    return this.studentService.findOneById(id, {
+      relations:{group: true}
+    });
   }
 
   @Get('details')
