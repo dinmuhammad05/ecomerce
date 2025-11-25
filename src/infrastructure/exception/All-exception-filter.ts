@@ -26,14 +26,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let message: string | string[] = 'Internal server error';
     let errorType = 'InternalServerError';
 
-    // Xatolik turini aniqlash
+    // ----------------------------------------------------
+    // XATOLIK TURINI ANIQLASH
+    // ----------------------------------------------------
+
     if (exception instanceof HttpException) {
+      // 1. Standart NestJS HTTP xatolar
       httpStatus = exception.getStatus();
       const responseBody = exception.getResponse();
 
-      // Agar ThrottlerException (429) bo'lsa - bu DDoS urinish bo'lishi mumkin
       if (httpStatus === 429) {
-        // 429 - Too Many Requests
         message = 'Rate limit exceeded (Potential DDoS attack)';
         errorType = 'TooManyRequests';
       } else if (typeof responseBody === 'object' && responseBody !== null) {
@@ -46,6 +48,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = responseBody;
       }
     } else if (exception instanceof QueryFailedError) {
+      // 2. Database (TypeORM) xatolar
       if ((exception as any).code === '23505') {
         httpStatus = HttpStatus.CONFLICT;
         message = 'Duplicate entry';
@@ -53,22 +56,28 @@ export class AllExceptionsFilter implements ExceptionFilter {
       } else {
         message = 'Database error';
       }
+    } else if (
+      // 3. (YANGI QISM) Oddiy Obyekt sifatida kelgan xatolar (sizdagi holat)
+      exception &&
+      typeof exception === 'object' &&
+      'statusCode' in exception
+    ) {
+      const errObj = exception as any;
+      httpStatus = errObj.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
+      message = errObj.message || message;
+      errorType = errObj.error || errorType;
     }
-    // console.log(exception);
 
     // ----------------------------------------------------
-    // YANGI: IP, Davlat va Device ni aniqlash
+    // LOGGING: IP, Davlat va Device
     // ----------------------------------------------------
-    // IP ni aniqlash (Proxy orqasidan bo'lsa ham)
     const clientIp =
       (request.headers['x-forwarded-for'] as string)?.split(',')[0] ||
       request.ip ||
       'Unknown IP';
 
-    // Mamlakatni aniqlash
     const geo = geoip.lookup(clientIp);
-    const country = geo ? geo.country : 'Unknown/Local'; // Masalan: 'UZ', 'US', 'RU'
-
+    const country = geo ? geo.country : 'Unknown/Local';
     const userAgent = request.headers['user-agent'] || 'Unknown Device';
 
     // Log obyekti
@@ -83,20 +92,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
     };
 
-    // LOG YOZISH MANTIQI
+    // LOG YOZISH
     if (httpStatus === 429) {
-      // Agar limitdan oshib ketsa (DDoS gumoni), buni WARNING sifatida alohida belgilaymiz
       this.logger.warn(
         `DDOS ALERT | IP: ${clientIp} (${country}) is spamming! | ${JSON.stringify(errorLog)}`,
       );
     } else if (httpStatus >= 500) {
-      // Server xatolari
+      // Agar rostan ham 500 bo'lsa stackni chiqaramiz
       this.logger.error(
         `SERVER ERROR | Country: ${country} | ${JSON.stringify(errorLog)}`,
-        (exception as Error).stack,
+        (exception as Error).stack || null,
       );
     } else {
-      // Oddiy client xatolari
+      // Client xatolari (400, 401, 404, 422 va h.k.) - Endi bu yerga tushadi
       this.logger.warn(
         `CLIENT ERROR | Country: ${country} | ${JSON.stringify(errorLog)}`,
       );

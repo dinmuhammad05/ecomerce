@@ -7,9 +7,9 @@ interface IConfig {
   NODE_ENV: string;
   TOKEN: {
     ACCESS_TOKEN_KEY: string;
-    ACCESS_TOKEN_TIME: string;
+    ACCESS_TOKEN_TIME: number;
     REFRESH_TOKEN_KEY: string;
-    REFRESH_TOKEN_TIME: string;
+    REFRESH_TOKEN_TIME: number;
   };
   SUPER_ADMIN: {
     USERNAME: string;
@@ -24,9 +24,9 @@ export const appConfig: IConfig = {
   NODE_ENV: String(process.env.NODE_ENV),
   TOKEN: {
     ACCESS_TOKEN_KEY: String(process.env.TOKEN_ACCESS_TOKEN_KEY),
-    ACCESS_TOKEN_TIME: String(process.env.TOKEN_ACCESS_TOKEN_TIME),
+    ACCESS_TOKEN_TIME: Number(process.env.TOKEN_ACCESS_TOKEN_TIME),
     REFRESH_TOKEN_KEY: String(process.env.TOKEN_REFRESH_TOKEN_KEY),
-    REFRESH_TOKEN_TIME: String(process.env.TOKEN_REFRESH_TOKEN_TIME),
+    REFRESH_TOKEN_TIME: Number(process.env.TOKEN_REFRESH_TOKEN_TIME),
   },
   SUPER_ADMIN: {
     USERNAME: String(process.env.SUPER_ADMIN_USERNAME),

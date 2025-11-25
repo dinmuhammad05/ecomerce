@@ -11,16 +11,14 @@ export class TokenService {
   async accessToken(payload: IToken): Promise<string> {
     return this.jwt.signAsync(payload, {
       secret: appConfig.TOKEN.ACCESS_TOKEN_KEY,
-      expiresIn: appConfig.TOKEN
-        .ACCESS_TOKEN_TIME as `${number}${'s' | 'm' | 'h' | 'd'}`,
+      expiresIn: appConfig.TOKEN.ACCESS_TOKEN_TIME * 24 * 60 * 60,
     });
   }
 
   async refreshToken(payload: IToken): Promise<string> {
     return this.jwt.signAsync(payload, {
       secret: appConfig.TOKEN.REFRESH_TOKEN_KEY,
-      expiresIn: appConfig.TOKEN
-        .REFRESH_TOKEN_TIME as `${number}${'s' | 'm' | 'h' | 'd'}`,
+      expiresIn: appConfig.TOKEN.REFRESH_TOKEN_TIME * 24 * 60 * 60,
     });
   }
 

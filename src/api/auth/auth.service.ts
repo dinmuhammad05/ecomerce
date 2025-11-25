@@ -4,8 +4,12 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Response } from 'express';
+import { Role, SigninDto } from 'src/common/dto/signin.dto';
 import { appConfig } from 'src/config';
+import { AdminEntity, TeacherEntity } from 'src/core';
+import { CryptoService } from 'src/infrastructure/crypto/crypto.service';
 import { successRes } from 'src/infrastructure/response/success.response';
 import { IToken } from 'src/infrastructure/token/interface';
 import { TokenService } from 'src/infrastructure/token/Token';
@@ -13,10 +17,88 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly jwt: TokenService) {}
+  constructor(
+    @InjectRepository(AdminEntity)
+    private readonly adminRepo: Repository<AdminEntity>,
+    @InjectRepository(TeacherEntity)
+    private readonly teacherRepo: Repository<TeacherEntity>,
+    private readonly crypto: CryptoService,
+    private readonly tokenService: TokenService,
+  ) {}
+
+  async signin(dto: SigninDto, res: Response) {
+    const { username, password } = dto;
+    if (dto.role == Role.ADMIN) {
+      const admin = await this.adminRepo.findOne({ where: { username } });
+
+      const isMatchPassword = await this.crypto.decrypt(
+        password,
+        admin?.password || '',
+      );
+      if (!admin || !isMatchPassword)
+        throw new HttpException('Username or password is incorrect', 400);
+
+      const payload: IToken = {
+        id: admin.id,
+        isActive: admin.is_active,
+        role: admin.role,
+      };
+      const accessToken = await this.tokenService.accessToken(payload);
+      const refreshToken = await this.tokenService.refreshToken(payload);
+      await this.tokenService.writeCookie(res, 'adminToken', refreshToken, 30);
+
+      return successRes({
+        token: accessToken,
+        user: {
+          id: admin.id,
+          username: admin.username,
+          fullName: admin.fullName,
+          role: admin.role,
+          createdAt: admin.createdAt,
+          updatedAt: admin.updatedAt,
+        },
+      });
+    }
+    if (dto.role == Role.TEACHER) {
+      const teacher = await this.teacherRepo.findOne({ where: { username } });
+
+      const isMatchPassword = await this.crypto.decrypt(
+        password,
+        teacher?.password || '',
+      );
+      if (!teacher || !isMatchPassword)
+        throw new HttpException('Username or password is incorrect', 400);
+
+      const payload: IToken = {
+        id: teacher.id,
+        isActive: teacher.isActive,
+        role: teacher.role,
+      };
+      const accessToken = await this.tokenService.accessToken(payload);
+      const refreshToken = await this.tokenService.refreshToken(payload);
+      await this.tokenService.writeCookie(
+        res,
+        'teacherToken',
+        refreshToken,
+        30,
+      );
+
+      return successRes({
+        token: accessToken,
+        user: {
+          id: teacher.id,
+          username: teacher.username,
+          fullName: teacher.name,
+          role: teacher.role,
+          createdAt: teacher.createdAt,
+          updatedAt: teacher.updatedAt,
+        },
+      });
+    }
+  }
 
   async newToken(repository: Repository<any>, token: string) {
-    const data: any = await this.jwt.verifyToken(
+    const data: any = await this.tokenService.verifyToken(
       token,
       appConfig.TOKEN.REFRESH_TOKEN_KEY,
     );
@@ -33,7 +115,7 @@ export class AuthService {
       isActive: user.isActive,
       role: user.role,
     };
-    const accessToken = await this.jwt.accessToken(paylod);
+    const accessToken = await this.tokenService.accessToken(paylod);
     return successRes({ token: accessToken, paylod });
   }
 

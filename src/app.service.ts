@@ -16,7 +16,10 @@ class AppService {
     });
 
     app.enableCors({
-      origin: ['http://localhost:5173'],
+      // origin: ['http://localhost:5173'],
+      origin: [
+        'http://localhost:5173',
+        'http://localhost:5174',],
       credentials: true,
     });
 
@@ -72,9 +75,14 @@ class AppService {
       .build();
 
     const documentFactory = () => SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, documentFactory);
+    SwaggerModule.setup('api', app, documentFactory(), {
+      swaggerOptions: {
+        persistAuthorization: true,
+      },
+      customSiteTitle: 'CRM Swagger Docs'
+    });
 
-    await app.listen(appConfig.port || 3000, () => {
+    await app.listen(appConfig.port, () => {
       console.log(`Server started on port ${appConfig.port}`);
     });
   }
