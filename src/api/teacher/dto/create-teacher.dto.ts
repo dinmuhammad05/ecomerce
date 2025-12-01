@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  ArrayNotEmpty,
+  IsArray,
   IsEnum,
   IsNotEmpty,
   IsOptional,
@@ -25,10 +27,13 @@ export class CreateTeacherDto {
   @MinLength(6)
   password: string;
 
-  @ApiProperty({
-    type: String,
+ @ApiProperty({
+    description: 'Teacher specifications IDs',
+    type: [String], // array of strings
+    example: ['uuid-1', 'uuid-2'],
   })
-  @IsUUID()
-  @IsNotEmpty()
+  @IsArray({ message: 'Specifications should be an array' })
+  @ArrayNotEmpty({ message: 'Specifications cannot be empty' })
+  @IsUUID('all', { each: true, message: 'Each specification must be a valid UUID' })
   specification: string[];
 }
