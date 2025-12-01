@@ -54,7 +54,8 @@ export class TeacherService extends BaseService<
     const specification = await this.specificationRepo.findBy({
       id: In(createTeacherDto.specification),
     });
-    if (specification.length!==0) {
+    console.log('ffffffffffffffffff',specification)
+    if (specification.length===0) {
       throw new BadRequestException('Specification not found');
     }
 
