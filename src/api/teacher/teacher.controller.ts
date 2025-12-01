@@ -9,6 +9,9 @@ import {
   UseGuards,
   Query,
   Res,
+  UploadedFile,
+  HttpException,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { TeacherService } from './teacher.service';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
@@ -32,6 +35,8 @@ import { UpdatePasswordDto } from 'src/common/dto/update-password.dto';
 import { SigninDto } from 'src/common/dto/signin.dto';
 import { type Response } from 'express';
 import { AuthService } from '../auth/auth.service';
+import { ApiImageFile } from 'src/common/decorator/upload.decorator';
+import { parse } from 'path';
 
 @UseGuards(AuthGuard, RolesGuard)
 @Controller('teacher')
@@ -104,7 +109,7 @@ export class TeacherController {
   @ApiOperation({ summary: 'for admin and super admin' })
   @ApiBearerAuth()
   @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
-  findOneById(@Param('id') id: string) {
+  findOneById(@Param('id', ParseUUIDPipe) id: string) {
     return this.teacherService.findOneById(id);
   }
 
@@ -115,7 +120,7 @@ export class TeacherController {
   @ApiBearerAuth()
   @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
   update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateTeacherDto: UpdateTeacherDtoForAdmin,
   ) {
     return this.teacherService.updateForAdmin(id, updateTeacherDto);
@@ -152,6 +157,36 @@ export class TeacherController {
     @CurrentUser() user: IToken,
   ) {
     return this.teacherService.updatePassword(user.id, updatePasswordDto);
+  }
+
+  @Patch('soft-delete/:id')
+    @ApiOperation({ summary: 'for super admin' })
+    @accessRoles(Roles.SUPER_ADMIN, Roles.ADMIN)
+    @ApiBearerAuth()
+    softDelete(@Param('id', ParseUUIDPipe) id: string) {
+      return this.teacherService.softDelete(id);
+    }
+
+  @Patch('update-avatar')
+  @ApiOperation({ summary: 'Update avatar (Universal Upload)' })
+  @accessRoles(Roles.TEACHER)
+  @ApiBearerAuth()
+  @ApiImageFile('file', true)
+  updateAvatar(
+    @CurrentUser() user: IToken,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new HttpException('File is required', 400);
+
+    return this.teacherService.updateAvatar(user.id, file);
+  }
+
+  @Delete('delete-avatar')
+  @ApiOperation({ summary: 'Delete avatar' })
+  @accessRoles(Roles.TEACHER)
+  @ApiBearerAuth()
+  deleteAvatar(@CurrentUser() user: IToken) {
+    return this.teacherService.deleteAvatar(user.id);
   }
 
   @Delete('teacher/:id')

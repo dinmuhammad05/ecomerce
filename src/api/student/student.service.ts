@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -19,6 +20,8 @@ import { Response } from 'express';
 import { TokenService } from 'src/infrastructure/token/Token';
 import { IToken } from 'src/infrastructure/token/interface';
 import { UpdatePasswordDto } from 'src/common/dto/update-password.dto';
+import { existsSync, unlinkSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class StudentService extends BaseService<
@@ -142,5 +145,39 @@ export class StudentService extends BaseService<
     student.password = await this.cryptoService.encrypt(dto.newPassword);
 
     return successRes(await this.studentRepo.save(student));
+  }
+
+  async updateAvatar(id: string, file: Express.Multer.File): Promise<ISuccess> {
+      const student = await this.studentRepo.findOne({ where: { id } });
+      if (!student) throw new HttpException('Student not found', 404);
+  
+      const avatarUrl = join('/uploads', file.filename);
+      const deletedAvatarUrl = join(process.cwd(), student.avatarUrl);
+  
+      if (existsSync(deletedAvatarUrl)) {
+        unlinkSync(deletedAvatarUrl);
+      }
+  
+      await this.studentRepo.update(id, { avatarUrl });
+  
+      const updatedStudent = await this.studentRepo.findOne({ where: { id } });
+      return successRes(updatedStudent);
+    }
+
+    async deleteAvatar(id: string): Promise<ISuccess> {
+    const teacher = await this.studentRepo.findOne({ where: { id } });
+    if (!teacher) throw new HttpException('Teacher not found', 404);
+
+    const deletedAvatarUrl = join(process.cwd(), teacher.avatarUrl);
+
+    if (existsSync(deletedAvatarUrl)) {
+      unlinkSync(deletedAvatarUrl);
+    }
+
+    teacher.avatarUrl = '';
+
+    const updated = await this.studentRepo.save(teacher);
+
+    return successRes(updated);
   }
 }

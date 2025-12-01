@@ -22,17 +22,12 @@ export class TokenService {
     });
   }
 
-  async writeCookie(
-    res: Response,
-    key: string,
-    value: string,
-    time: number,
-  ): Promise<void> {
+  async writeCookie(res: Response, key: string, value: string, time: number) {
     res.cookie(key, value, {
-      httpOnly: appConfig.NODE_ENV === 'production',
-      secure: appConfig.NODE_ENV === 'production',
-      maxAge: Number(time) * 24 * 60 * 60 * 1000,
-      sameSite: 'lax',
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      maxAge: time * 24 * 60 * 60 * 1000,
       path: '/',
     });
   }

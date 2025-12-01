@@ -15,6 +15,8 @@ import { ISuccess } from 'src/infrastructure/pagination/successResponse';
 import { appConfig } from 'src/config';
 import { Roles } from 'src/common/enum/roles.enum';
 import { UpdatePasswordDto } from 'src/common/dto/update-password.dto';
+import { existsSync, unlinkSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class AdminService
@@ -97,7 +99,7 @@ export class AdminService
 
     const payload: IToken = {
       id: admin.id,
-      isActive: admin.is_active,
+      isActive: admin.isActive,
       role: admin.role,
     };
     const accessToken = await this.tokenService.accessToken(payload);
@@ -130,6 +132,40 @@ export class AdminService
 
     const newPassword = await this.crypto.encrypt(dto.newPassword);
     const updated = await this.adminRepo.update(id, { password: newPassword });
+
+    return successRes(updated);
+  }
+
+  async updateAvatar(id: string, file: Express.Multer.File): Promise<ISuccess> {
+    const admin = await this.adminRepo.findOne({ where: { id } });
+    if (!admin) throw new HttpException('Admin not found', 404);
+
+    const avatarUrl = join('/uploads', file.filename);
+    const deletedAvatarUrl = join(process.cwd(), admin.avatarUrl);
+
+    if (existsSync(deletedAvatarUrl)) {
+      unlinkSync(deletedAvatarUrl);
+    }
+
+    await this.adminRepo.update(id, { avatarUrl });
+
+    const updatedAdmin = await this.adminRepo.findOne({ where: { id } });
+    return successRes(updatedAdmin);
+  }
+
+  async deleteAvatar(id: string): Promise<ISuccess> {
+    const admin = await this.adminRepo.findOne({ where: { id } });
+    if (!admin) throw new HttpException('Admin not found', 404);
+
+    const deletedAvatarUrl = join(process.cwd(), admin.avatarUrl);
+
+    if (existsSync(deletedAvatarUrl)) {
+      unlinkSync(deletedAvatarUrl);
+    }
+
+    admin.avatarUrl = '';
+
+    const updated = await this.adminRepo.save(admin);
 
     return successRes(updated);
   }

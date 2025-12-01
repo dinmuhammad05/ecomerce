@@ -16,6 +16,7 @@ interface IConfig {
     PASSWORD: string;
     FULLNAME: string;
   };
+  UPLOAD_FOLDER: string;
 }
 
 export const appConfig: IConfig = {
@@ -33,4 +34,5 @@ export const appConfig: IConfig = {
     PASSWORD: String(process.env.SUPER_ADMIN_PASSWORD),
     FULLNAME: String(process.env.SUPER_ADMIN_FULLNAME),
   },
+  UPLOAD_FOLDER: String(process.env.UPLOAD_FOLDER),
 };

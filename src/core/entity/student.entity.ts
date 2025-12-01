@@ -1,6 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { GroupEntity } from './group.entity';
+import { Exclude } from 'class-transformer';
 
 export enum StudentRole {
   STUDENT = 'student',
@@ -16,6 +17,7 @@ export class StudentEntity extends BaseEntity {
   email: string;
 
   @Column({ type: 'varchar', length: 255 })
+  @Exclude()
   password: string;
 
   @Column({
@@ -24,6 +26,9 @@ export class StudentEntity extends BaseEntity {
     default: StudentRole.STUDENT,
   })
   role: StudentRole;
+
+  @Column({ type: 'varchar', default: '' })
+  avatarUrl: string;
 
   @Column({ type: 'uuid', nullable: true })
   groupId: string;

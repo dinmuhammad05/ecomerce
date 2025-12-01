@@ -10,6 +10,8 @@ import {
   UseGuards,
   ParseIntPipe,
   ParseUUIDPipe,
+  UploadedFile,
+  HttpException,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
@@ -40,6 +42,7 @@ import {
 } from 'src/common/document/swagger/admin/getAdmin';
 import { get } from 'http';
 import { UpdatePasswordDto } from 'src/common/dto/update-password.dto';
+import { ApiImageFile } from 'src/common/decorator/upload.decorator';
 
 @UseGuards(AuthGuard, RolesGuard)
 @Controller('admin')
@@ -75,7 +78,7 @@ export class AdminController {
   @ApiOperation({ summary: 'for super admin and admin' })
   @accessRoles('public')
   refresh(@CookieGetter('adminToken') token: string) {
-    return this.authService.newToken(this.adminService.getRepository, token);
+    // return this.authService.newToken(this.adminService.getRepository, token);
   }
 
   @Post('signout')
@@ -124,7 +127,7 @@ export class AdminController {
   @SwaggerSuccessResponse(getOneAdminDoc.success)
   @SwaggerErrorResponse(getOneAdminDoc.error)
   @ApiOperation({ summary: 'for admin' })
-  @accessRoles(Roles.ADMIN)
+  @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
   @ApiBearerAuth()
   getDetails(@CurrentUser() user: IToken) {
     return this.adminService.findOneById(user.id);
@@ -150,6 +153,28 @@ export class AdminController {
     return this.adminService.updatePassword(user.id, dto);
   }
 
+  @Patch('update-avatar')
+  @ApiOperation({ summary: 'Update avatar (Universal Upload)' })
+  @accessRoles(Roles.SUPER_ADMIN, Roles.ADMIN, 'ID')
+  @ApiBearerAuth()
+  @ApiImageFile('file', true) 
+  updateAvatar(
+    @CurrentUser() user: IToken,
+    @UploadedFile() file: Express.Multer.File, 
+  ) {
+    if (!file) throw new HttpException('File is required', 400);
+    
+    return this.adminService.updateAvatar(user.id, file);
+  }
+
+  @Patch('soft-delete/:id')
+  @ApiOperation({ summary: 'for super admin' })
+  @accessRoles(Roles.SUPER_ADMIN)
+  @ApiBearerAuth()
+  softDelete(@Param('id', ParseUUIDPipe) id: string) {
+    return this.adminService.softDelete(id);
+  }
+
   @Delete('delete/:id')
   @SwaggerSuccessResponse(signOutDoc.success)
   @SwaggerErrorResponse(signOutDoc.error)
@@ -158,5 +183,13 @@ export class AdminController {
   @ApiBearerAuth()
   delete(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminService.delete(id);
+  }
+
+  @Delete('delete-avatar')
+  @ApiOperation({ summary: 'Delete avatar' })
+  @accessRoles(Roles.SUPER_ADMIN, Roles.ADMIN)
+  @ApiBearerAuth()
+  deleteAvatar(@CurrentUser() user: IToken) {
+    return this.adminService.deleteAvatar(user.id);
   }
 }

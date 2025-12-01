@@ -10,6 +10,8 @@ import {
   UseGuards,
   Query,
   Res,
+  HttpException,
+  UploadedFile,
 } from '@nestjs/common';
 import { StudentService } from './student.service';
 import { CreateStudentDto } from './dto/create-student.dto';
@@ -28,6 +30,7 @@ import { SigninDtoStudent } from './dto/sgnin.dto';
 import { type Response } from 'express';
 import { AuthService } from '../auth/auth.service';
 import { UpdatePasswordDto } from 'src/common/dto/update-password.dto';
+import { ApiImageFile } from 'src/common/decorator/upload.decorator';
 
 @UseGuards(AuthGuard, RolesGuard)
 @ApiBearerAuth()
@@ -72,6 +75,7 @@ export class StudentController {
       where: query.query ? { name: ILike(`%${query.query}%`) } : {},
       skip: query.page,
       take: query.pageSize,
+      relations: { group: true },
     });
   }
 
@@ -80,7 +84,7 @@ export class StudentController {
   @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
   findOneForAdmin(@Param('id', ParseUUIDPipe) id: string) {
     return this.studentService.findOneById(id, {
-      relations:{group: true}
+      relations: { group: true },
     });
   }
 
@@ -119,6 +123,36 @@ export class StudentController {
     @CurrentUser() user: IToken,
   ) {
     return this.studentService.updatePassword(user.id, updatePasswordDto);
+  }
+
+  @Patch('soft-delete/:id')
+  @ApiOperation({ summary: 'for super admin' })
+  @accessRoles(Roles.SUPER_ADMIN, Roles.ADMIN)
+  @ApiBearerAuth()
+  softDelete(@Param('id', ParseUUIDPipe) id: string) {
+    return this.studentService.softDelete(id);
+  }
+
+  @Patch('update-avatar')
+  @ApiOperation({ summary: 'Update avatar (Universal Upload)' })
+  @accessRoles(Roles.STUDENT)
+  @ApiBearerAuth()
+  @ApiImageFile('file', true)
+  updateAvatar(
+    @CurrentUser() user: IToken,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new HttpException('File is required', 400);
+
+    return this.studentService.updateAvatar(user.id, file);
+  }
+
+  @Delete('delete-avatar')
+  @ApiOperation({ summary: 'Delete avatar' })
+  @accessRoles(Roles.STUDENT,)
+  @ApiBearerAuth()
+  deleteAvatar(@CurrentUser() user: IToken) {
+    return this.studentService.deleteAvatar(user.id);
   }
 
   @Delete(':id')

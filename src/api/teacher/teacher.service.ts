@@ -19,6 +19,8 @@ import { SigninDto } from 'src/common/dto/signin.dto';
 import { Response } from 'express';
 import { TokenService } from 'src/infrastructure/token/Token';
 import { IToken } from 'src/infrastructure/token/interface';
+import { existsSync, unlinkSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class TeacherService extends BaseService<
@@ -153,6 +155,40 @@ export class TeacherService extends BaseService<
       ...teacher,
       password: newPassword,
     });
+
+    return successRes(updated);
+  }
+
+    async updateAvatar(id: string, file: Express.Multer.File): Promise<ISuccess> {
+      const teacher = await this.teacherRepo.findOne({ where: { id } });
+      if (!teacher) throw new HttpException('Teacher not found', 404);
+  
+      const avatarUrl = join('/uploads', file.filename);
+      const deletedAvatarUrl = join(process.cwd(), teacher.avatarUrl);
+  
+      if (existsSync(deletedAvatarUrl)) {
+        unlinkSync(deletedAvatarUrl);
+      }
+  
+      await this.teacherRepo.update(id, { avatarUrl });
+  
+      const updatedTeacher = await this.teacherRepo.findOne({ where: { id } });
+      return successRes(updatedTeacher);
+    }
+
+    async deleteAvatar(id: string): Promise<ISuccess> {
+    const teacher = await this.teacherRepo.findOne({ where: { id } });
+    if (!teacher) throw new HttpException('Teacher not found', 404);
+
+    const deletedAvatarUrl = join(process.cwd(), teacher.avatarUrl);
+
+    if (existsSync(deletedAvatarUrl)) {
+      unlinkSync(deletedAvatarUrl);
+    }
+
+    teacher.avatarUrl = '';
+
+    const updated = await this.teacherRepo.save(teacher);
 
     return successRes(updated);
   }

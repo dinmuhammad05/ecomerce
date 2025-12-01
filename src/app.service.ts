@@ -1,5 +1,10 @@
-import { HttpStatus, Injectable, ValidationPipe } from '@nestjs/common';
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import {
+  ClassSerializerInterceptor,
+  HttpStatus,
+  Injectable,
+  ValidationPipe,
+} from '@nestjs/common';
+import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { appConfig } from './config';
@@ -7,29 +12,40 @@ import cookieParser from 'cookie-parser';
 import { AllExceptionsFilter } from './infrastructure/exception/All-exception-filter';
 import { winstonConfig } from './infrastructure/winston/winston.config';
 import { contacts } from './common/document/swagger/admin/docs';
-
+import { NestExpressApplication } from '@nestjs/platform-express';
+import * as express from 'express';
+import { join } from 'path';
 @Injectable()
 class AppService {
   async main() {
-    const app = await NestFactory.create(AppModule, {
+    const app = await NestFactory.create<NestExpressApplication>(AppModule, {
       logger: winstonConfig,
     });
 
     app.enableCors({
-      // origin: ['http://localhost:5173'],
-      origin: [
-        'http://localhost:5173',
-        'http://localhost:5174',],
+      origin: true,
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       credentials: true,
     });
 
-    app.setGlobalPrefix('api/v1');
+    app.useGlobalInterceptors(
+      new ClassSerializerInterceptor(app.get(Reflector)),
+    );
+
+    const globalPrefix = 'api/v1';
+    app.setGlobalPrefix(globalPrefix);
+
     app.use(cookieParser());
 
     const httpAdapter = app.get(HttpAdapterHost);
+
     app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
 
     app.useLogger(['log', 'error', 'warn', 'debug', 'verbose']);
+
+    const staticFile = join(__dirname, `../${appConfig.UPLOAD_FOLDER}`);
+
+    app.use(`/${globalPrefix}/${appConfig.UPLOAD_FOLDER}`, express.static(staticFile));
 
     // validation pipe
     app.useGlobalPipes(
@@ -75,12 +91,7 @@ class AppService {
       .build();
 
     const documentFactory = () => SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, documentFactory(), {
-      swaggerOptions: {
-        persistAuthorization: true,
-      },
-      customSiteTitle: 'CRM Swagger Docs'
-    });
+    SwaggerModule.setup('api', app, documentFactory());
 
     await app.listen(appConfig.port, () => {
       console.log(`Server started on port ${appConfig.port}`);

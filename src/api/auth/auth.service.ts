@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Response } from 'express';
-import {  SigninDto } from 'src/common/dto/signin.dto';
+import { SigninDto } from 'src/common/dto/signin.dto';
 import { Roles } from 'src/common/enum/roles.enum';
 import { appConfig } from 'src/config';
 import { AdminEntity, TeacherEntity } from 'src/core';
@@ -30,7 +30,7 @@ export class AuthService {
   async signin(dto: SigninDto, res: Response) {
     const { username, password } = dto;
     if (dto.role == 'Admin') {
-      const admin = await this.adminRepo.findOne({ where: { username } });
+      const admin = await this.adminRepo.findOne({ where: { username , isActive: true, isDeleted: false} });
 
       const isMatchPassword = await this.crypto.decrypt(
         password,
@@ -41,7 +41,7 @@ export class AuthService {
 
       const payload: IToken = {
         id: admin.id,
-        isActive: admin.is_active,
+        isActive: admin.isActive,
         role: admin.role,
       };
       const accessToken = await this.tokenService.accessToken(payload);
@@ -61,7 +61,7 @@ export class AuthService {
       });
     }
     if (dto.role == 'Teacher') {
-      const teacher = await this.teacherRepo.findOne({ where: { username } });
+      const teacher = await this.teacherRepo.findOne({ where: { username, isActive: true, isDeleted: false } });
 
       const isMatchPassword = await this.crypto.decrypt(
         password,
@@ -95,12 +95,12 @@ export class AuthService {
           updatedAt: teacher.updatedAt,
         },
       });
-    } else{
+    } else {
       throw new HttpException('Role not found', 400);
     }
   }
 
-  async newToken(repository: Repository<any>, token: string) {
+  async refreshAdmin(token: string) {
     const data: any = await this.tokenService.verifyToken(
       token,
       appConfig.TOKEN.REFRESH_TOKEN_KEY,
@@ -109,10 +109,58 @@ export class AuthService {
       throw new HttpException('Authorization error', 401);
     }
 
-    const user = await repository.findOne({ where: { id: data?.id } });
+    const user = await this.adminRepo.findOne({ where: { id: data?.id , isActive: true, isDeleted: false} });
     if (!user) {
       throw new ForbiddenException('Forbidden user');
     }
+    const paylod: IToken = {
+      id: user.id,
+      isActive: user.isActive,
+      role: Roles.ADMIN,
+    };
+    const accessToken = await this.tokenService.accessToken(paylod);
+    return successRes({ token: accessToken, paylod });
+  }
+
+  async refreshTeacher(token: string) {
+    const data: any = await this.tokenService.verifyToken(
+      token,
+      appConfig.TOKEN.REFRESH_TOKEN_KEY,
+    );
+
+    if (!data) {
+      throw new HttpException('Authorization error', 401);
+    }
+
+    const user = await this.teacherRepo.findOne({ where: { id: data?.id, isActive: true, isDeleted: false } });
+
+    if (!user) {
+      throw new ForbiddenException('Forbidden user');
+    }
+
+    const paylod: IToken = {
+      id: user.id,
+      isActive: user.isActive,
+      role: user.role,
+    };
+
+    const accessToken = await this.tokenService.accessToken(paylod);
+
+    return successRes({ token: accessToken, paylod });
+  }
+
+  async studentrefresh(token: string) {
+    const data: any = await this.tokenService.verifyToken(
+      token,
+      appConfig.TOKEN.REFRESH_TOKEN_KEY,
+    );
+
+    if (!data) throw new HttpException('Authorization error', 401);
+
+    const user = await this.teacherRepo.findOne({ where: { id: data?.id , isActive: true, isDeleted: false} });
+
+    if (!user) throw new ForbiddenException('Forbidden user');
+
     const paylod: IToken = {
       id: user.id,
       isActive: user.isActive,

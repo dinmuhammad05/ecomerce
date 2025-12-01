@@ -82,7 +82,15 @@ export class GroupController {
     return this.groupService.findForStudent(user.id, id);
   }
 
-  @Patch(':id')
+  @Patch('soft-delete/:id')
+  @ApiOperation({ summary: 'for super admin' })
+  @accessRoles(Roles.SUPER_ADMIN, Roles.ADMIN)
+  @ApiBearerAuth()
+  softDelete(@Param('id', ParseUUIDPipe) id: string) {
+    return this.groupService.softDelete(id);
+  }
+
+  @Patch('details:id')
   @ApiOperation({ summary: 'Update group for admins and superadmins' })
   @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
   @ApiBearerAuth()

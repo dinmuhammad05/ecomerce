@@ -75,4 +75,26 @@ export class BaseService<CreateDto, UpdateDto, Entity> {
     (await this.repository.delete(id)) as unknown as Entity;
     return successRes({});
   }
+
+  async softDelete(id: string): Promise<ISuccess> {
+    const user = await this.repository.findOne({ where: { id } });
+    if (!user) {
+      throw new HttpException('User not found', 404);
+    }
+    console.log('user', user);
+    user.isDeleted = true;
+
+    const data = await this.repository.save(user);
+    return successRes({ isDelete: data?.isDeleted });
+  }
+
+  async updateStatus(id: string): Promise<ISuccess> {
+    const user = await this.repository.findOne({ where: { id } });
+    if (!user) {
+      throw new HttpException('User not found', 404);
+    }
+    user.isActive = !user.isActive;
+    const data = await this.repository.save(user);
+    return successRes({ isActive: data?.isActive });
+  }
 }
