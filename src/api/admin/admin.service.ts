@@ -143,9 +143,14 @@ export class AdminService
     const avatarUrl = join('/uploads', file.filename);
     const deletedAvatarUrl = join(process.cwd(), admin.avatarUrl);
 
-    if (existsSync(deletedAvatarUrl)) {
-      unlinkSync(deletedAvatarUrl);
+    try {
+      if (existsSync(deletedAvatarUrl)) {
+        unlinkSync(deletedAvatarUrl);
+      }
+    } catch (error) {
+      console.log(error);
     }
+   
 
     await this.adminRepo.update(id, { avatarUrl });
 

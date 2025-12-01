@@ -4,10 +4,9 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   MinLength,
 } from 'class-validator';
-import { Roles } from 'src/common/enum/roles.enum';
-import { TeacherSpecialization } from 'src/common/enum/specialization.enum';
 
 export class CreateTeacherDto {
   @ApiProperty({ example: 'John Doe', description: 'Teacher full name' })
@@ -27,10 +26,9 @@ export class CreateTeacherDto {
   password: string;
 
   @ApiProperty({
-    enum: TeacherSpecialization,
-    default: TeacherSpecialization.FULLSTACK,
+    type: String,
   })
-  @IsEnum(TeacherSpecialization)
-  @IsOptional()
-  specification?: TeacherSpecialization;
+  @IsUUID()
+  @IsNotEmpty()
+  specification: string[];
 }

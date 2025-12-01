@@ -44,7 +44,7 @@ class AppService {
     app.useLogger(['log', 'error', 'warn', 'debug', 'verbose']);
 
     const staticFile = join(__dirname, `../${appConfig.UPLOAD_FOLDER}`);
-
+    console.log(join(__dirname, `../${appConfig.UPLOAD_FOLDER}`))
     app.use(`/${globalPrefix}/${appConfig.UPLOAD_FOLDER}`, express.static(staticFile));
 
     // validation pipe

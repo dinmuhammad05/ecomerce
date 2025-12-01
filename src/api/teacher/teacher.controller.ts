@@ -90,6 +90,7 @@ export class TeacherController {
       skip: query.page,
       take: query.pageSize,
       relations: { groups: true },
+      order: { createdAt: 'DESC' },
     });
   }
 
@@ -103,7 +104,7 @@ export class TeacherController {
     return this.teacherService.findOneById(user.id);
   }
 
-  @Get('teacher/:id')
+  @Get('for-admin/:id')
   @SwaggerSuccessResponse(getTeacherDoc.successOne)
   @SwaggerErrorResponse(getTeacherDoc.errorOne)
   @ApiOperation({ summary: 'for admin and super admin' })
@@ -167,6 +168,14 @@ export class TeacherController {
       return this.teacherService.softDelete(id);
     }
 
+  @Patch('update-status/:id')
+  @ApiOperation({ summary: 'for super admin and admin' })
+  @accessRoles(Roles.SUPER_ADMIN, Roles.ADMIN)
+  @ApiBearerAuth()
+  updateStatus(@Param('id', ParseUUIDPipe) id: string) {
+    return this.teacherService.updateStatus(id);
+  }
+
   @Patch('update-avatar')
   @ApiOperation({ summary: 'Update avatar (Universal Upload)' })
   @accessRoles(Roles.TEACHER)
@@ -189,7 +198,7 @@ export class TeacherController {
     return this.teacherService.deleteAvatar(user.id);
   }
 
-  @Delete('teacher/:id')
+  @Delete(':id')
   @SwaggerSuccessResponse({
     example: {
       statusCode: 200,

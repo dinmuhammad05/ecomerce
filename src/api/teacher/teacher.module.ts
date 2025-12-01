@@ -7,9 +7,10 @@ import { CryptoService } from 'src/infrastructure/crypto/crypto.service';
 import { TokenService } from 'src/infrastructure/token/Token';
 import { AuthService } from '../auth/auth.service';
 import { AuthModule } from '../auth/auth.module';
+import { Specification } from 'src/core/entity/specification';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TeacherEntity]), AuthModule],
+  imports: [TypeOrmModule.forFeature([TeacherEntity, Specification]), AuthModule],
   controllers: [TeacherController],
   providers: [TeacherService, CryptoService, TokenService, ],
   exports: [TeacherService],

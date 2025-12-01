@@ -109,15 +109,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
         `CLIENT ERROR | Country: ${country} | ${JSON.stringify(errorLog)}`,
       );
     }
-
+    console.log(exception)
     // Clientga javob
     const responseBody = {
       statusCode: httpStatus,
+      message: message,
       timestamp: new Date().toISOString(),
       path: httpAdapter.getRequestUrl(request),
       method: request.method,
-      error: errorType,
-      message: message,
     };
 
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);

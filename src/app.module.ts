@@ -12,6 +12,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { VideoModule } from './api/video/video.module';
 import { AuthModule } from './api/auth/auth.module';
 import { StatisticModule } from './api/statistic/statistic.module';
+import { SpecificationModule } from './api/specification/specification.module';
 
 @Module({
   imports: [
@@ -19,12 +20,12 @@ import { StatisticModule } from './api/statistic/statistic.module';
       isGlobal: true,
     }),
 
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000, // 60 sekund (millisekundda)
-        limit: 10, // Maksimum 10 ta so'rov
-      },
-    ]),
+    // ThrottlerModule.forRoot([
+    //   {
+    //     ttl: 60000, // 60 sekund (millisekundda)
+    //     limit: 10, // Maksimum 10 ta so'rov
+    //   },
+    // ]),
     TypeOrmModule.forRootAsync({
       useFactory: async () => {
         try {
@@ -54,14 +55,15 @@ import { StatisticModule } from './api/statistic/statistic.module';
     GroupModule,
     AuthModule,
     StatisticModule,
+    SpecificationModule,
     // VideoModule,
   ],
   controllers: [],
   providers: [
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
+    // {
+    //   // provide: APP_GUARD,
+    //   // useClass: ThrottlerGuard,
+    // },
   ],
 })
 export class AppModule {}
