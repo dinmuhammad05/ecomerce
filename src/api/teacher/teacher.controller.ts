@@ -89,7 +89,7 @@ export class TeacherController {
       where: query.query ? { name: ILike(`%${query.query}%`) } : {},
       skip: query.page,
       take: query.pageSize,
-      relations: { groups: true },
+      relations: { groups: true, specifications: true },
       order: { createdAt: 'DESC' },
     });
   }
@@ -101,7 +101,9 @@ export class TeacherController {
   @ApiBearerAuth()
   @accessRoles(Roles.TEACHER)
   findOne(@CurrentUser() user: IToken) {
-    return this.teacherService.findOneById(user.id);
+    return this.teacherService.findOneById(user.id, {
+      relations: { groups: true, specifications: true },
+    });
   }
 
   @Get('for-admin/:id')
@@ -111,7 +113,9 @@ export class TeacherController {
   @ApiBearerAuth()
   @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
   findOneById(@Param('id', ParseUUIDPipe) id: string) {
-    return this.teacherService.findOneById(id);
+    return this.teacherService.findOneById(id, {
+      relations: { groups: true, specifications: true },
+    });
   }
 
   @Patch('teacher/:id')
@@ -124,6 +128,7 @@ export class TeacherController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateTeacherDto: UpdateTeacherDtoForAdmin,
   ) {
+    console.log(updateTeacherDto);
     return this.teacherService.updateForAdmin(id, updateTeacherDto);
   }
 
@@ -161,12 +166,12 @@ export class TeacherController {
   }
 
   @Patch('soft-delete/:id')
-    @ApiOperation({ summary: 'for super admin' })
-    @accessRoles(Roles.SUPER_ADMIN, Roles.ADMIN)
-    @ApiBearerAuth()
-    softDelete(@Param('id', ParseUUIDPipe) id: string) {
-      return this.teacherService.softDelete(id);
-    }
+  @ApiOperation({ summary: 'for super admin' })
+  @accessRoles(Roles.SUPER_ADMIN, Roles.ADMIN)
+  @ApiBearerAuth()
+  softDelete(@Param('id', ParseUUIDPipe) id: string) {
+    return this.teacherService.softDelete(id);
+  }
 
   @Patch('update-status/:id')
   @ApiOperation({ summary: 'for super admin and admin' })
@@ -188,6 +193,20 @@ export class TeacherController {
     if (!file) throw new HttpException('File is required', 400);
 
     return this.teacherService.updateAvatar(user.id, file);
+  }
+
+  @Patch('update-avatar-teacher/:id')
+  @ApiOperation({ summary: 'Update avatar for admin (Universal Upload)' })
+  @accessRoles(Roles.SUPER_ADMIN, Roles.ADMIN)
+  @ApiBearerAuth()
+  @ApiImageFile('file', true)
+  updateAvatarTeacher(
+    @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new HttpException('File is required', 400);
+
+    return this.teacherService.updateAvatar(id, file);
   }
 
   @Delete('delete-avatar')

@@ -23,7 +23,7 @@ export class CreateTeacherDto {
 
   @ApiProperty({ example: 'strongPassword123', description: 'Password' })
   @IsString()
-  @IsNotEmpty()
+  // @IsNotEmpty()
   @MinLength(6)
   password: string;
 

@@ -47,6 +47,7 @@ export class GroupController {
       where: query.query ? { name: ILike(`%${query.query}%`) } : {},
       skip: query.page,
       take: query.pageSize,
+      relations:{ teacher: true , students: true}
     });
   }
 
@@ -109,4 +110,3 @@ export class GroupController {
     return this.groupService.delete(id);
   }
 }
-// 6c67fdeb-5af0-46e9-9ca5-e52502ae175d

@@ -207,7 +207,7 @@ export class TeacherService extends BaseService<
     const teacher = await this.teacherRepo.findOne({ where: { id } });
     if (!teacher) throw new HttpException('Teacher not found', 404);
 
-    const avatarUrl = join('/uploads', file.filename);
+    const avatarUrl = `https://9mbn3t91-3000.euw.devtunnels.ms/api/v1${join('/uploads', file.filename)}`
     const deletedAvatarUrl = join(process.cwd(), teacher.avatarUrl);
 
     if (existsSync(deletedAvatarUrl)) {
