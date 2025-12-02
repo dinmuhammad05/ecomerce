@@ -9,8 +9,16 @@ export class GroupEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
-  @Column({ type: 'date' })
-  lessonTime: Date;
+  // Boshlanish va tugash vaqti (soat:minut formatida saqlash uchun string yoki time)
+  @Column({ type: 'time' })
+  startTime: string;
+
+  @Column({ type: 'time' })
+  endTime: string;
+
+  // Necha oy davom etishi
+  @Column({ type: 'int', default: 1 })
+  durationInMonths: number;
 
   @OneToMany(() => StudentEntity, (student) => student.group)
   students: StudentEntity[];

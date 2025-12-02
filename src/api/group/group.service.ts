@@ -24,19 +24,22 @@ export class GroupService extends BaseService<
   }
 
   async createGroup(createGroupDto: CreateGroupDto): Promise<ISuccess> {
+    let teacherEntity = undefined;
+
     if (createGroupDto.teacherId) {
       const existsTeacher = await this.teacherService.findOneById(
         createGroupDto.teacherId,
       );
-      const teacherEntity = (existsTeacher as any).data ?? existsTeacher;
-      const createdGroup = this.groupRepo.create({
-        ...createGroupDto,
-        teacher: teacherEntity,
-      });
-      const saved = await this.groupRepo.save(createdGroup);
-      return successRes(saved, 201);
+      teacherEntity = (existsTeacher as any).data ?? existsTeacher;
     }
-    return this.create(createGroupDto);
+
+    const createdGroup = this.groupRepo.create({
+      ...createGroupDto,
+      teacher: teacherEntity,
+    });
+
+    const saved = await this.groupRepo.save(createdGroup);
+    return successRes(saved, 201);
   }
 
   async findForTeacher(teacherId: string, groupId: string) {
@@ -49,7 +52,9 @@ export class GroupService extends BaseService<
       .select([
         'group.id',
         'group.name',
-        'group.lessonTime',
+        'group.startTime',
+        'group.endTime',
+        'group.durationInMonths',
         'teacher.id',
         'teacher.name',
         'student.name',
@@ -64,8 +69,15 @@ export class GroupService extends BaseService<
       .createQueryBuilder('group')
       .leftJoin('group.students', 'student')
       .where('group.id = :groupId', { groupId })
-      .andWhere('student.id = :studentId', { studentId: studentId })
-      .select(['group.id', 'group.name', 'group.lessonTime', 'student.name'])
+      .andWhere('student.id = :studentId', { studentId })
+      .select([
+        'group.id',
+        'group.name',
+        'group.startTime',
+        'group.endTime',
+        'group.durationInMonths',
+        'student.name',
+      ])
       .getOne();
 
     return successRes(group);
