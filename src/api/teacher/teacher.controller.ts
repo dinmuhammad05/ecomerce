@@ -217,6 +217,14 @@ export class TeacherController {
     return this.teacherService.deleteAvatar(user.id);
   }
 
+  @Delete('delete-avatar/for-admin/:id')
+  @ApiOperation({ summary: 'Delete avatar' })
+  @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
+  @ApiBearerAuth()
+  deleteAvatarForAdmin(@Param('id', ParseUUIDPipe) id: string) {
+    return this.teacherService.deleteAvatar(id);
+  }
+
   @Delete(':id')
   @SwaggerSuccessResponse({
     example: {

@@ -1,4 +1,12 @@
-import { Entity, Column, OneToMany, ManyToOne, JoinColumn, JoinTable, ManyToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+} from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Roles } from 'src/common/enum/roles.enum';
 import { GroupEntity } from './group.entity';
@@ -26,14 +34,21 @@ export class TeacherEntity extends BaseEntity {
 
   @Column({
     type: 'varchar',
-    default: '/uploads/b77f4b3654b873c177f590b590180181.jpeg',
+    nullable: true,
   })
   avatarUrl: string;
+
+  @Column({
+    type: 'varchar',
+    default: 'uploads/dd5074bfd8b7a84c3ab334f556e79558.jpeg',
+    nullable: true,
+  })
+  url: string;
 
   @OneToMany(() => GroupEntity, (group) => group.teacher)
   groups: GroupEntity[];
 
-   @ManyToMany(() => Specification, (spec) => spec.teachers, {
+  @ManyToMany(() => Specification, (spec) => spec.teachers, {
     eager: true,
   })
   @JoinTable({

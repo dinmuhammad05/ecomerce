@@ -30,6 +30,9 @@ export class StudentEntity extends BaseEntity {
   @Column({ type: 'varchar', default: '' })
   avatarUrl: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  url: string;
+
   @Column({ type: 'uuid', nullable: true })
   groupId: string;
 

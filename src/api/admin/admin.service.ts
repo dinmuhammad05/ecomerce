@@ -140,21 +140,23 @@ export class AdminService
     const admin = await this.adminRepo.findOne({ where: { id } });
     if (!admin) throw new HttpException('Admin not found', 404);
 
-    const avatarUrl = join('/uploads', file.filename);
-    const deletedAvatarUrl = join(process.cwd(), admin.avatarUrl);
+    const url = join('/uploads', file.filename);
+    const avatarUrl = `https://9mbn3t91-3000.euw.devtunnels.ms/api/v1${url}`
+    const deletedAvatarUrl = join(process.cwd(), admin.url);
 
     try {
-      if (existsSync(deletedAvatarUrl)) {
+      if (existsSync(deletedAvatarUrl) && admin.url) {
         unlinkSync(deletedAvatarUrl);
       }
     } catch (error) {
       console.log(error);
     }
-   
 
-    await this.adminRepo.update(id, { avatarUrl });
+    admin.avatarUrl = avatarUrl;
+    admin.url = url;
 
-    const updatedAdmin = await this.adminRepo.findOne({ where: { id } });
+    const updatedAdmin = await this.adminRepo.save(admin)
+
     return successRes(updatedAdmin);
   }
 
@@ -162,13 +164,14 @@ export class AdminService
     const admin = await this.adminRepo.findOne({ where: { id } });
     if (!admin) throw new HttpException('Admin not found', 404);
 
-    const deletedAvatarUrl = join(process.cwd(), admin.avatarUrl);
+    const deletedAvatarUrl = join(process.cwd(), admin.url);
 
-    if (existsSync(deletedAvatarUrl)) {
+    if (existsSync(deletedAvatarUrl) && admin.url) {
       unlinkSync(deletedAvatarUrl);
     }
 
     admin.avatarUrl = '';
+    admin.url = '';
 
     const updated = await this.adminRepo.save(admin);
 

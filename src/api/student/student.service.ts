@@ -148,33 +148,37 @@ export class StudentService extends BaseService<
   }
 
   async updateAvatar(id: string, file: Express.Multer.File): Promise<ISuccess> {
-      const student = await this.studentRepo.findOne({ where: { id } });
-      if (!student) throw new HttpException('Student not found', 404);
-  
-      const avatarUrl = join('/uploads', file.filename);
-      const deletedAvatarUrl = join(process.cwd(), student.avatarUrl);
-  
-      if (existsSync(deletedAvatarUrl)) {
-        unlinkSync(deletedAvatarUrl);
-      }
-  
-      await this.studentRepo.update(id, { avatarUrl });
-  
-      const updatedStudent = await this.studentRepo.findOne({ where: { id } });
-      return successRes(updatedStudent);
+    const student = await this.studentRepo.findOne({ where: { id } });
+    if (!student) throw new HttpException('Student not found', 404);
+
+    const url = join('/uploads', file.filename);
+    const avatarUrl = `https://9mbn3t91-3000.euw.devtunnels.ms/api/v1${url}`;
+
+    const deletedAvatarUrl = join(process.cwd(), student.url);
+
+    if (existsSync(deletedAvatarUrl) && student.url) {
+      unlinkSync(deletedAvatarUrl);
     }
 
-    async deleteAvatar(id: string): Promise<ISuccess> {
+    student.avatarUrl = avatarUrl;
+    student.url = url;
+
+    const updatedStudent = await this.studentRepo.save(student);
+    return successRes(updatedStudent);
+  }
+
+  async deleteAvatar(id: string): Promise<ISuccess> {
     const teacher = await this.studentRepo.findOne({ where: { id } });
     if (!teacher) throw new HttpException('Teacher not found', 404);
 
-    const deletedAvatarUrl = join(process.cwd(), teacher.avatarUrl);
+    const deletedAvatarUrl = join(process.cwd(), teacher.url);
 
-    if (existsSync(deletedAvatarUrl)) {
+    if (existsSync(deletedAvatarUrl) && teacher.url) {
       unlinkSync(deletedAvatarUrl);
     }
 
     teacher.avatarUrl = '';
+    teacher.url = '';
 
     const updated = await this.studentRepo.save(teacher);
 

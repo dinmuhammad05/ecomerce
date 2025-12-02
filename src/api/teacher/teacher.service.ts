@@ -54,8 +54,8 @@ export class TeacherService extends BaseService<
     const specification = await this.specificationRepo.findBy({
       id: In(createTeacherDto.specification),
     });
-    console.log('ffffffffffffffffff',specification)
-    if (specification.length===0) {
+    console.log('ffffffffffffffffff', specification);
+    if (specification.length === 0) {
       throw new BadRequestException('Specification not found');
     }
 
@@ -207,16 +207,22 @@ export class TeacherService extends BaseService<
     const teacher = await this.teacherRepo.findOne({ where: { id } });
     if (!teacher) throw new HttpException('Teacher not found', 404);
 
-    const avatarUrl = `https://9mbn3t91-3000.euw.devtunnels.ms/api/v1${join('/uploads', file.filename)}`
-    const deletedAvatarUrl = join(process.cwd(), teacher.avatarUrl);
+    const url = join('/uploads', file.filename);
 
-    if (existsSync(deletedAvatarUrl)) {
+    const avatarUrl = `https://9mbn3t91-3000.euw.devtunnels.ms/api/v1${url}`;
+
+    const deletedAvatarUrl = join(process.cwd(), teacher.url);
+    console.log('deletedAvatarUrl',deletedAvatarUrl);
+    console.log('if', existsSync(deletedAvatarUrl && teacher.url));
+    if (existsSync(deletedAvatarUrl )&& teacher.url) {
       unlinkSync(deletedAvatarUrl);
     }
 
-    await this.teacherRepo.update(id, { avatarUrl });
+    teacher.avatarUrl = avatarUrl;
+    teacher.url = url;
 
-    const updatedTeacher = await this.teacherRepo.findOne({ where: { id } });
+    const updatedTeacher = await this.teacherRepo.save(teacher);
+
     return successRes(updatedTeacher);
   }
 
@@ -224,13 +230,14 @@ export class TeacherService extends BaseService<
     const teacher = await this.teacherRepo.findOne({ where: { id } });
     if (!teacher) throw new HttpException('Teacher not found', 404);
 
-    const deletedAvatarUrl = join(process.cwd(), teacher.avatarUrl);
+    const deletedAvatarUrl = join(process.cwd(), teacher.url);
 
     if (existsSync(deletedAvatarUrl)) {
       unlinkSync(deletedAvatarUrl);
     }
 
     teacher.avatarUrl = '';
+    teacher.url = '';
 
     const updated = await this.teacherRepo.save(teacher);
 

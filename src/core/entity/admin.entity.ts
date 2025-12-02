@@ -18,6 +18,9 @@ export class AdminEntity extends BaseEntity {
   @Column({ type: 'varchar', default: '' })
   avatarUrl: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  url: string;
+
   @Column({ type: 'enum', enum: Roles, default: Roles.ADMIN })
   role: Roles;
 }
