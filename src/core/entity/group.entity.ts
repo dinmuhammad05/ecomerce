@@ -10,14 +10,14 @@ export class GroupEntity extends BaseEntity {
   name: string;
 
   // Boshlanish va tugash vaqti (soat:minut formatida saqlash uchun string yoki time)
-  @Column({ type: 'time' })
+  @Column({ type: 'time', nullable: true })
   startTime: string;
 
-  @Column({ type: 'time' })
+  @Column({ type: 'time', nullable: true })
   endTime: string;
 
   // Necha oy davom etishi
-  @Column({ type: 'int', default: 1 })
+  @Column({ type: 'int', nullable:true })
   durationInMonths: number;
 
   @OneToMany(() => StudentEntity, (student) => student.group)

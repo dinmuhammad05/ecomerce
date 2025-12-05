@@ -23,7 +23,8 @@ export class CreateGroupDto {
   @Matches(/^([0-1]\d|2[0-3]):([0-5]\d)$/, {
     message: 'startTime must be in HH:MM format',
   })
-  startTime: string;
+  @IsOptional()
+  startTime?: string;
 
   @ApiProperty({
     example: '11:00',
@@ -32,7 +33,8 @@ export class CreateGroupDto {
   @Matches(/^([0-1]\d|2[0-3]):([0-5]\d)$/, {
     message: 'endTime must be in HH:MM format',
   })
-  endTime: string;
+  @IsOptional()
+  endTime?: string;
 
   @ApiProperty({
     example: 3,
@@ -41,7 +43,8 @@ export class CreateGroupDto {
   @IsInt()
   @Min(1)
   @Max(36)
-  durationInMonths: number;
+  @IsOptional()
+  durationInMonths?: number;
 
   @ApiProperty({
     example: 'uuid-of-teacher',

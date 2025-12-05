@@ -22,32 +22,32 @@ export class StatisticController {
   constructor(private readonly statisticService: StatisticService) {}
 
   @Get()
-  @accessRoles(Roles.ADMIN)
-  getStatistic() {
+  @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
+  getStatisticAll() {
     return this.statisticService.getStatisticAll();
   }
 
   @Get('/top-teachers')
-  @accessRoles(Roles.ADMIN)
+  @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
   getTopTeachers() {
     return this.statisticService.getTopTeachers();
   }
 
   @Get('/top-groups')
-  @accessRoles(Roles.ADMIN)
-  getTopGroups() {
-    return this.statisticService.getTopGroups();
+  @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
+  getTopGroupsByStudents() {
+    return this.statisticService.getTopGroupsByStudents();
   }
 
-  @Get('/average-age-students')
-  @accessRoles(Roles.ADMIN)
-  getAverageAgeStudents() {
-    return this.statisticService.getAverageAgeStudents();
+  @Get('/most-opened-groups')
+  @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
+  getMostOpenedGroups() {
+    return this.statisticService.getMostOpenedGroups();
   }
 
-  @Get('/average-age-teachers')
-  @accessRoles(Roles.ADMIN)
-  getAverageAgeTeachers() {
-    return this.statisticService.getAverageAgeTeachers();
+  @Get('/student-count-by-month')
+  @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
+  getStudentCountByMonth() {
+    return this.statisticService.getStudentCountByMonth();
   }
 }

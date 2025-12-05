@@ -47,7 +47,8 @@ export class GroupController {
       where: query.query ? { name: ILike(`%${query.query}%`) } : {},
       skip: query.page,
       take: query.pageSize,
-      relations:{ teacher: true , students: true}
+      relations:{ teacher: true , students: true},
+      order: { createdAt: 'DESC' },
     });
   }
 

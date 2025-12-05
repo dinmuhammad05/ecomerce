@@ -212,9 +212,9 @@ export class TeacherService extends BaseService<
     const avatarUrl = `https://9mbn3t91-3000.euw.devtunnels.ms/api/v1${url}`;
 
     const deletedAvatarUrl = join(process.cwd(), teacher.url);
-    console.log('deletedAvatarUrl',deletedAvatarUrl);
+    console.log('deletedAvatarUrl', deletedAvatarUrl);
     console.log('if', existsSync(deletedAvatarUrl && teacher.url));
-    if (existsSync(deletedAvatarUrl )&& teacher.url) {
+    if (existsSync(deletedAvatarUrl) && teacher.url) {
       unlinkSync(deletedAvatarUrl);
     }
 
