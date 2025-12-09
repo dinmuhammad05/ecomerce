@@ -56,7 +56,7 @@ import { SpecificationModule } from './api/specification/specification.module';
     AuthModule,
     StatisticModule,
     SpecificationModule,
-    // VideoModule,
+    VideoModule,
   ],
   controllers: [],
   providers: [
