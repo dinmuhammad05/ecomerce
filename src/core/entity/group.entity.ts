@@ -1,0 +1,35 @@
+import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
+import { BaseEntity } from './base.entity';
+import { LessonEntity } from './lesson.entity';
+import { StudentEntity } from './student.entity';
+import { TeacherEntity } from './teacher.entity';
+
+@Entity('groups')
+export class GroupEntity extends BaseEntity {
+  @Column({ type: 'varchar', length: 255 })
+  name: string;
+
+  // Boshlanish va tugash vaqti (soat:minut formatida saqlash uchun string yoki time)
+  @Column({ type: 'time', nullable: true })
+  startTime: string;
+
+  @Column({ type: 'time', nullable: true })
+  endTime: string;
+
+  // Necha oy davom etishi
+  @Column({ type: 'int', nullable:true })
+  durationInMonths: number;
+
+  @OneToMany(() => StudentEntity, (student) => student.group)
+  students: StudentEntity[];
+
+  @OneToMany(() => LessonEntity, (lesson) => lesson.group)
+  lessons: LessonEntity[];
+
+  @ManyToOne(() => TeacherEntity, (teacher) => teacher.groups)
+  @JoinColumn({ name: 'teacherId' })
+  teacher: TeacherEntity;
+
+  @Column({ type: 'uuid', nullable: true })
+  teacherId: string;
+}
