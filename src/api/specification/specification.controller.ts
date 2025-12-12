@@ -45,14 +45,14 @@ export class SpecificationController {
     return this.specificationService.findAll();
   }
 
-  @Get(':id')
+  @Get('/:id')
   @ApiOperation({ summary: 'Get all specification (all users)' })
   @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN, Roles.TEACHER, Roles.STUDENT)
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.specificationService.findOneById(id);
   }
 
-  @Patch(':id')
+  @Patch('/:id')
   @ApiOperation({ summary: 'Update specification (admin, super-admin)' })
   @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
   update(
@@ -62,7 +62,7 @@ export class SpecificationController {
     return this.specificationService.update(id, updateSpecificationDto);
   }
 
-  @Delete(':id')
+  @Delete('/:id')
   @ApiOperation({ summary: 'Delete specification (admin, super-admin)' })
   @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
   remove(@Param('id', ParseUUIDPipe) id: string) {

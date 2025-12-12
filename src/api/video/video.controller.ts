@@ -62,7 +62,7 @@ export class VideoController {
     return this.videoService.uploadVideo(file, body);
   }
 
-  @Get(':id')
+  @Get('/:id')
   @ApiOperation({ summary: 'Video statusini tekshirish' })
   async getStatus(@Param('id') id: string) {
     return this.videoService.getVideoInfo(id);

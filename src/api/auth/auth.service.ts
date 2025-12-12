@@ -90,6 +90,7 @@ export class AuthService {
           id: teacher.id,
           username: teacher.username,
           fullName: teacher.name,
+          avatarUrl: teacher.url,
           role: teacher.role,
           createdAt: teacher.createdAt,
           updatedAt: teacher.updatedAt,

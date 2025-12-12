@@ -52,7 +52,7 @@ export class GroupController {
     });
   }
 
-  @Get('for-admin:id')
+  @Get('for-admin/:id')
   @ApiOperation({ summary: 'Get group by id for admins and superadmins' })
   @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
   @ApiBearerAuth()
@@ -74,7 +74,7 @@ export class GroupController {
     });
   }
 
-  @Get('for-teacher:id')
+  @Get('for-teacher/:id')
   @ApiOperation({ summary: 'Get group by id for teachers ' })
   @accessRoles(Roles.TEACHER)
   @ApiBearerAuth()
@@ -82,10 +82,11 @@ export class GroupController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: IToken,
   ) {
+    console.log(user, "................................");
     return this.groupService.findForTeacher(user.id, id);
   }
 
-  @Get('for-student:id')
+  @Get('for-student/:id')
   @ApiOperation({ summary: 'Get group by id for students' })
   @accessRoles(Roles.STUDENT)
   @ApiBearerAuth()
@@ -104,7 +105,7 @@ export class GroupController {
     return this.groupService.softDelete(id);
   }
 
-  @Patch('details:id')
+  @Patch('details/:id')
   @ApiOperation({ summary: 'Update group for admins and superadmins' })
   @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
   @ApiBearerAuth()
@@ -115,7 +116,7 @@ export class GroupController {
     return this.groupService.update(id, updateGroupDto);
   }
 
-  @Delete(':id')
+  @Delete('/:id')
   @ApiOperation({ summary: 'Delete group for admins and superadmins' })
   @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
   @ApiBearerAuth()

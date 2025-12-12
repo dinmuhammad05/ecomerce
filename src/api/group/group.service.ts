@@ -60,6 +60,7 @@ export class GroupService extends BaseService<
         'student.name',
       ])
       .getOne();
+      console.log(group, teacherId, groupId);
 
     return successRes(group);
   }

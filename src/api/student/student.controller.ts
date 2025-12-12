@@ -196,7 +196,7 @@ export class StudentController {
     return this.studentService.deleteAvatar(user.id);
   }
 
-  @Delete(':id')
+  @Delete('/:id')
   @ApiOperation({ summary: 'Delete student for admin and superadmin' })
   @accessRoles(Roles.ADMIN, Roles.SUPER_ADMIN)
   remove(@Param('id', ParseUUIDPipe) id: string) {
